@@ -50,6 +50,12 @@ ARG NODE_VERSION=None
 RUN if [ "$NODE_VERSION" != "None" ] ; then curl -fsSL https://deb.nodesource.com/setup_$NODE_VERSION.x | bash - \
     && apt-get install -y nodejs ; fi
 
+# We have to declare this ARG again because ARG declared before FROM can't be used after it
+ARG CGI_SERVER
+
+# Enable Apache modules 
+RUN if [ "$CGI_SERVER" = "apache" ] ; then a2enmod rewrite ; fi
+
 # Install MS ODBC Driver for SQL Server
 ### Commented due to EULA. also you may need to change the debian version to 10 for older php images
 # RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
