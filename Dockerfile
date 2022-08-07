@@ -1,5 +1,6 @@
+ARG CGI_SERVER
 ARG PHP_VERSION=8.1
-FROM php:${PHP_VERSION}
+FROM php:${PHP_VERSION}-${CGI_SERVER}
 
 # Install system and extension dependencies
 RUN apt-get update && apt-get install -y \

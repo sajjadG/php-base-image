@@ -1,30 +1,37 @@
 #!/bin/bash
 set -euo pipefail
 
-PHP_VERSIONS=('7.4-apache' '7.4-fpm' '8.0-apache' '8.0-fpm' '8.1-apache' '8.1-fpm')
-NODE_VERSIONS=('12' '14' '16' '18')
 REPOSITORY_NAME=sajjadg
 IMAGE_NAME=php-base-image
+CGI_SERVERS=('apache' 'fpm')
+PHP_VERSIONS=('7.4' '8.0' '8.1')
+NODE_VERSIONS=('12' '14' '16' '18')
 
-for PHP_VERSION in "${PHP_VERSIONS[@]}"
+for CGI_SERVER in "${CGI_SERVERS[@]}"
 do
-    for NODE_VERSION in "${NODE_VERSIONS[@]}"
-    do        
-        echo ">>>>>>> Building ${REPOSITORY_NAME}/${IMAGE_NAME}:php${PHP_VERSION} <<<<<<<"
+    for PHP_VERSION in "${PHP_VERSIONS[@]}"
+    do
+        echo ">>>>>>> Building ${REPOSITORY_NAME}/${IMAGE_NAME}:php${PHP_VERSION}-${CGI_SERVER} <<<<<<<"
         docker build \
+        --build-arg CGI_SERVER=${CGI_SERVER} \
         --build-arg PHP_VERSION=${PHP_VERSION} \
-        --tag ${REPOSITORY_NAME}/${IMAGE_NAME}:php${PHP_VERSION} \
+        --tag ${REPOSITORY_NAME}/${IMAGE_NAME}:php${PHP_VERSION}-${CGI_SERVER} \
         .
 
-        docker push ${REPOSITORY_NAME}/${IMAGE_NAME}:php${PHP_VERSION}
+        docker push ${REPOSITORY_NAME}/${IMAGE_NAME}:php${PHP_VERSION}-${CGI_SERVER}
 
-        echo ">>>>>>> Building ${REPOSITORY_NAME}/${IMAGE_NAME}:php${PHP_VERSION}-node${NODE_VERSION} <<<<<<<"
-        docker build \
-        --build-arg PHP_VERSION=${PHP_VERSION} \
-        --build-arg NODE_VERSION=${NODE_VERSION} \
-        --tag ${REPOSITORY_NAME}/${IMAGE_NAME}:php${PHP_VERSION}-node${NODE_VERSION} \
-        .
+        for NODE_VERSION in "${NODE_VERSIONS[@]}"
+        do        
 
-        docker push ${REPOSITORY_NAME}/${IMAGE_NAME}:php${PHP_VERSION}-node${NODE_VERSION}
+            echo ">>>>>>> Building ${REPOSITORY_NAME}/${IMAGE_NAME}:php${PHP_VERSION}-${CGI_SERVER}-node${NODE_VERSION} <<<<<<<"
+            docker build \
+            --build-arg CGI_SERVER=${CGI_SERVER} \
+            --build-arg PHP_VERSION=${PHP_VERSION} \
+            --build-arg NODE_VERSION=${NODE_VERSION} \
+            --tag ${REPOSITORY_NAME}/${IMAGE_NAME}:php${PHP_VERSION}-${CGI_SERVER}-node${NODE_VERSION} \
+            .
+
+            docker push ${REPOSITORY_NAME}/${IMAGE_NAME}:php${PHP_VERSION}-${CGI_SERVER}-node${NODE_VERSION}
+        done
     done
 done
